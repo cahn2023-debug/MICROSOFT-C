@@ -1,0 +1,14 @@
+{
+    "name": "Preview Test",
+    "version": "1.0.0",
+    "description": "Sample JSON file for preview testing",
+    "features": [
+        "Syntax highlighting",
+        "Dark/Light theme support",
+        "Line numbers"
+    ],
+    "settings": {
+        "enabled": true,
+        "maxSize": 5000000
+    }
+}

@@ -1,0 +1,74 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Application Icon as DrawingImage (Vector-based, scalable) -->
+    <DrawingImage x:Key="AppIconDrawing">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <!-- Background -->
+                <GeometryDrawing>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,64,64" RadiusX="8" RadiusY="8"/>
+                    </GeometryDrawing.Geometry>
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#1a365d" Offset="0"/>
+                            <GradientStop Color="#2d4a7c" Offset="1"/>
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                </GeometryDrawing>
+                
+                <!-- Folder Shape -->
+                <GeometryDrawing Brush="#30FFFFFF" Geometry="M 12 20 L 12 52 Q 12 55 15 55 L 52 55 Q 55 55 55 52 L 55 24 Q 55 21 52 21 L 32 21 L 30 17 Q 28 15 25 15 L 15 15 Q 12 15 12 18 Z"/>
+                
+                <!-- Gantt Bar 1 (Long) -->
+                <GeometryDrawing Geometry="M 16 28 L 44 28 L 44 33 L 16 33 Z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00B4DB" Offset="0"/>
+                            <GradientStop Color="#0083B0" Offset="1"/>
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                </GeometryDrawing>
+                
+                <!-- Gantt Bar 2 (Medium) -->
+                <GeometryDrawing Geometry="M 16 36 L 36 36 L 36 41 L 16 41 Z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00B4DB" Offset="0"/>
+                            <GradientStop Color="#0083B0" Offset="1"/>
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                </GeometryDrawing>
+                
+                <!-- Gantt Bar 3 (Short) -->
+                <GeometryDrawing Geometry="M 16 44 L 28 44 L 28 49 L 16 49 Z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00B4DB" Offset="0"/>
+                            <GradientStop Color="#0083B0" Offset="1"/>
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                </GeometryDrawing>
+                
+                <!-- Checkmark Circle -->
+                <GeometryDrawing Brush="#10B981">
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="50,46" RadiusX="8" RadiusY="8"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                
+                <!-- Checkmark -->
+                <GeometryDrawing>
+                    <GeometryDrawing.Geometry>
+                        <PathGeometry Figures="M 45 46 L 48 49 L 55 42"/>
+                    </GeometryDrawing.Geometry>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="White" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    
+</ResourceDictionary>

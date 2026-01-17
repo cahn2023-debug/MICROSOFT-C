@@ -1,0 +1,10 @@
+<Window x:Class="OfflineProjectManager.Views.ResourceManagerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:OfflineProjectManager.Views"
+        Title="Resource Manager (Personnel &amp; Contracts)" Height="600" Width="900"
+        WindowStartupLocation="CenterOwner" Background="#1E1E1E">
+    <Grid>
+        <local:ResourceManagerView x:Name="ManagerView"/>
+    </Grid>
+</Window>

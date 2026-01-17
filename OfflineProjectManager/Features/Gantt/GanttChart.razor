@@ -1,0 +1,318 @@
+@using MediatR
+@using OfflineProjectManager.Models
+@using OfflineProjectManager.Services
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@inject IMediator Mediator
+@inject IProjectService ProjectService
+@inject ITaskService TaskService
+@implements IDisposable
+
+<div class="gantt-container @(IsFullScreen ? "fullscreen" : "")"
+    style="--total-days: @TotalDays; --day-width: @DayWidthPx;" @onpointermove="OnPointerMove"
+@onpointerup="OnPointerUp" @onclick="HideContextMenu">
+
+    <div class="gantt-header">
+        <div class="gantt-sidebar-header">
+            Gantt Manager
+            <div class="zoom-controls" style="margin-left: 10px;">
+                <button class="zoom-btn" @onclick="() => SetZoom(25)">S</button>
+                <button class="zoom-btn" @onclick="() => SetZoom(40)">M</button>
+                <button class="zoom-btn" @onclick="() => SetZoom(80)">L</button>
+            </div>
+        </div>
+        <div class="gantt-timeline-header">
+            @for (var d = 0; d < TotalDays; d++)
+            {
+                <div class="timeline-day">@StartDate.AddDays(d).ToString("MM/dd")</div>
+            }
+        </div>
+        <div class="gantt-top-right-actions">
+            <button class="action-btn" title="View Full" @onclick="ToggleFullScreen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+            </button>
+            <button class="action-btn" title="Edit Tasks" @onclick="EnterEditMode">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="gantt-body">
+        <div class="gantt-sidebar-content">
+            <Virtualize @ref="_virtualizeSidebar" Items="@_tasks" Context="task">
+                <div class="sidebar-item" @oncontextmenu="(e) => ShowContextMenu(e, task)"
+                @oncontextmenu:preventDefault="true">
+                    @task.Name
+                </div>
+            </Virtualize>
+        </div>
+
+        <div class="gantt-grid-content">
+            <!-- Dependency Lines SVG -->
+            <svg class="dependencies-svg">
+                <defs>
+                    <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                        <polygon points="0 0, 6 2, 0 4" fill="#8b949e" opacity="0.6" />
+                    </marker>
+                </defs>
+                @foreach (var line in _dependencyLines)
+                {
+                    <path d="@line.Path" class="dependency-line" />
+                }
+            </svg>
+
+            <Virtualize @ref="_virtualizeGrid" Items="@_tasks" Context="task">
+                <div class="task-row">
+                    @{
+                        var sDate = task.StartDate ?? DateTime.Today;
+                        var eDate = task.EndDate ?? DateTime.Today.AddDays(1);
+
+                        var offset = (sDate - StartDate).TotalDays;
+                        var duration = (eDate - sDate).TotalDays;
+                        if (duration <= 0) duration = 1;
+                        var left = offset * DayWidthPxValue;
+                        var width = duration * DayWidthPxValue;
+                        var priorityClass = GetPriorityClass(task.Priority);
+                    }
+                    <div class="task-bar-container @priorityClass @(DraggingTaskId == task.Id ? "dragging" : "")"
+                        style="left: @(left)px; width: @(width)px;" @onpointerdown="(e) => OnPointerDown(e, task)"
+                    @oncontextmenu="(e) => ShowContextMenu(e, task)" @oncontextmenu:preventDefault="true">
+                        <div class="task-progress" style="width: @(task.Progress)%;"></div>
+                        <span class="task-label">@task.Name</span>
+                    </div>
+                </div>
+            </Virtualize>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    @if (_showContextMenu)
+    {
+        <div class="gantt-context-menu"
+            style="position: fixed; left: @(_menuX)px; top: @(_menuY)px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; padding: 4px; z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+            <div style="padding: 8px 12px; cursor: pointer; font-size: 13px; color: #c9d1d9;" @onclick="OpenTask">Open Task
+                Info</div>
+            <div style="padding: 8px 12px; cursor: pointer; font-size: 13px; color: #f85149;" @onclick="DeleteTask">Delete
+                Task</div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ProjectTask> _tasks = new();
+    private Virtualize<ProjectTask> _virtualizeSidebar;
+    private Virtualize<ProjectTask> _virtualizeGrid;
+
+    private DateTime StartDate { get; set; } = DateTime.Today.AddDays(-7);
+    private int TotalDays { get; set; } = 90;
+    private int DayWidthPxValue { get; set; } = 40;
+    private string DayWidthPx => $"{DayWidthPxValue}px";
+
+    // Dependency Lines
+    private List<DependencyLine> _dependencyLines = new();
+
+    // Context Menu State
+    private bool _showContextMenu = false;
+    private double _menuX, _menuY;
+    private ProjectTask _selectedTask;
+
+    // Drag & Drop State
+    private int? DraggingTaskId { get; set; }
+    private double DragStartX { get; set; }
+    private DateTime OriginalTaskStart { get; set; }
+
+    private bool IsFullScreen { get; set; } = false;
+
+    private void ToggleFullScreen() => IsFullScreen = !IsFullScreen;
+
+    private void EnterEditMode()
+    {
+        HideContextMenu();
+    }
+
+    private void SetZoom(int width)
+    {
+        DayWidthPxValue = width;
+        UpdateDependencyLines();
+    }
+
+    private string GetPriorityClass(string priority) => priority?.ToLower() switch
+    {
+        "high" => "priority-high",
+        "low" => "priority-low",
+        _ => "priority-normal"
+    };
+
+    private void ShowContextMenu(MouseEventArgs e, ProjectTask task)
+    {
+        _selectedTask = task;
+        _menuX = e.ClientX;
+        _menuY = e.ClientY;
+        _showContextMenu = true;
+    }
+
+    private void HideContextMenu() => _showContextMenu = false;
+
+    private void OpenTask()
+    {
+        HideContextMenu();
+    }
+
+    private async System.Threading.Tasks.Task DeleteTask()
+    {
+        HideContextMenu();
+        if (_selectedTask != null)
+        {
+            await TaskService.DeleteTaskAsync(_selectedTask.Id);
+        }
+    }
+
+    private void OnPointerDown(PointerEventArgs e, ProjectTask task)
+    {
+        if (task.StartDate == null) return;
+        DraggingTaskId = task.Id;
+        DragStartX = e.ClientX;
+        OriginalTaskStart = task.StartDate.Value;
+        HideContextMenu();
+    }
+
+    private void OnPointerMove(PointerEventArgs e)
+    {
+        if (DraggingTaskId.HasValue)
+        {
+            var task = _tasks.FirstOrDefault(t => t.Id == DraggingTaskId);
+            if (task != null && task.StartDate != null && task.EndDate != null)
+            {
+                var diffX = e.ClientX - DragStartX;
+                var daysDiff = Math.Round(diffX / DayWidthPxValue);
+
+                var newStart = OriginalTaskStart.AddDays(daysDiff);
+                var duration = (task.EndDate.Value - task.StartDate.Value).TotalDays;
+
+                task.StartDate = newStart;
+                task.EndDate = newStart.AddDays(duration);
+                UpdateDependencyLines();
+            }
+        }
+    }
+
+    private async System.Threading.Tasks.Task OnPointerUp(PointerEventArgs e)
+    {
+        if (DraggingTaskId.HasValue)
+        {
+            var task = _tasks.FirstOrDefault(t => t.Id == DraggingTaskId);
+            if (task != null && task.StartDate != null && task.EndDate != null)
+            {
+                await Mediator.Send(new UpdateGanttTaskDatesCommand(task.Id, task.StartDate.Value, task.EndDate.Value));
+            }
+            DraggingTaskId = null;
+            UpdateDependencyLines();
+        }
+    }
+
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
+    {
+        ProjectService.ProjectChanged += OnProjectChanged;
+        TaskService.TasksChanged += OnTasksChanged;
+        await LoadData();
+    }
+
+    private async void OnProjectChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadData();
+            StateHasChanged();
+            if (_virtualizeSidebar != null) await _virtualizeSidebar.RefreshDataAsync();
+            if (_virtualizeGrid != null) await _virtualizeGrid.RefreshDataAsync();
+        });
+    }
+
+    private async void OnTasksChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadData();
+            StateHasChanged();
+            if (_virtualizeSidebar != null) await _virtualizeSidebar.RefreshDataAsync();
+            if (_virtualizeGrid != null) await _virtualizeGrid.RefreshDataAsync();
+        });
+    }
+
+    private async System.Threading.Tasks.Task LoadData()
+    {
+        _tasks = await Mediator.Send(new GetGanttDataQuery());
+
+        var validTasks = _tasks.Where(t => t.StartDate != null && t.EndDate != null).ToList();
+
+        if (validTasks.Any())
+        {
+            var minStart = validTasks.Min(t => t.StartDate.Value);
+            StartDate = new DateTime(minStart.Year, minStart.Month, 1);
+            var maxEnd = validTasks.Max(t => t.EndDate.Value);
+            TotalDays = (int)(maxEnd - StartDate).TotalDays + 60;
+        }
+        else
+        {
+            StartDate = DateTime.Today.AddDays(-30);
+            TotalDays = 120;
+        }
+
+        UpdateDependencyLines();
+    }
+
+    private void UpdateDependencyLines()
+    {
+        _dependencyLines.Clear();
+        var rowHeight = 48; // Must match --gantt-row-height
+
+        for (int i = 0; i < _tasks.Count; i++)
+        {
+            var taskScope = _tasks[i];
+            if (string.IsNullOrEmpty(taskScope.Dependencies)) continue;
+
+            var predecessorIds = taskScope.Dependencies.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var idStr in predecessorIds)
+            {
+                if (int.TryParse(idStr.Trim(), out int predId))
+                {
+                    var predTask = _tasks.FirstOrDefault(t => t.Id == predId);
+                    if (predTask != null && predTask.StartDate != null && predTask.EndDate != null && taskScope.StartDate != null)
+                    {
+                        var predIndex = _tasks.IndexOf(predTask);
+
+                        var x1 = (predTask.EndDate.Value - StartDate).TotalDays * DayWidthPxValue;
+                        var y1 = (predIndex * rowHeight) + (rowHeight / 2);
+
+                        var x2 = (taskScope.StartDate.Value - StartDate).TotalDays * DayWidthPxValue;
+                        var y2 = (i * rowHeight) + (rowHeight / 2);
+
+                        var midX = x1 + (x2 - x1) / 2;
+                        if (x2 <= x1) midX = x1 + 15;
+
+                        var path = $"M {x1} {y1} L {midX} {y1} L {midX} {y2} L {x2} {y2}";
+                        _dependencyLines.Add(new DependencyLine { Path = path });
+                    }
+                }
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        ProjectService.ProjectChanged -= OnProjectChanged;
+        TaskService.TasksChanged -= OnTasksChanged;
+    }
+
+    public class DependencyLine
+    {
+        public string Path { get; set; }
+    }
+}

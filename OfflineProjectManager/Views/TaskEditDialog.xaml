@@ -1,0 +1,131 @@
+<Window x:Class="OfflineProjectManager.Views.TaskEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Task" Height="500" Width="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Window.Resources>
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style x:Key="InputStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Edit Task" FontSize="18" FontWeight="Bold" 
+                       Foreground="{DynamicResource ForegroundBrush}"/>
+            <TextBlock Text="Update task details, dates, and progress" FontSize="12"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+        </StackPanel>
+        
+        <!-- Form -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Task Name -->
+                <TextBlock Text="TASK NAME" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="TaskNameInput" Style="{StaticResource InputStyle}"/>
+                
+                <!-- Status -->
+                <TextBlock Text="STATUS" Style="{StaticResource LabelStyle}"/>
+                <ComboBox x:Name="StatusCombo" Margin="0,0,0,12"
+                          Background="{DynamicResource InputBackgroundBrush}">
+                    <ComboBoxItem Content="Todo" IsSelected="True"/>
+                    <ComboBoxItem Content="InProgress"/>
+                    <ComboBoxItem Content="Done"/>
+                </ComboBox>
+                
+                <!-- Priority -->
+                <TextBlock Text="PRIORITY" Style="{StaticResource LabelStyle}"/>
+                <ComboBox x:Name="PriorityCombo" Margin="0,0,0,12"
+                          Background="{DynamicResource InputBackgroundBrush}">
+                    <ComboBoxItem Content="Low"/>
+                    <ComboBoxItem Content="Normal" IsSelected="True"/>
+                    <ComboBoxItem Content="High"/>
+                </ComboBox>
+                
+                <!-- Date Range -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="START DATE" Style="{StaticResource LabelStyle}"/>
+                        <DatePicker x:Name="StartDatePicker" Margin="0,0,0,12"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="END DATE" Style="{StaticResource LabelStyle}"/>
+                        <DatePicker x:Name="EndDatePicker" Margin="0,0,0,12"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Progress -->
+                <TextBlock Text="PROGRESS" Style="{StaticResource LabelStyle}"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="ProgressSlider" Grid.Column="0" 
+                            Minimum="0" Maximum="100" Value="0"
+                            TickFrequency="10" IsSnapToTickEnabled="True"
+                            VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Foreground="{DynamicResource ForegroundBrush}">
+                        <TextBlock.Text>
+                            <Binding ElementName="ProgressSlider" Path="Value" StringFormat="{}{0:0}%"/>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </Grid>
+                
+                <!-- Dependencies -->
+                <TextBlock Text="DEPENDENCIES (comma-separated Task IDs)" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="DependenciesInput" Style="{StaticResource InputStyle}"
+                         ToolTip="Enter task IDs this task depends on, e.g., 1,3,5"/>
+                
+                <!-- Description -->
+                <TextBlock Text="DESCRIPTION" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="DescriptionInput" Style="{StaticResource InputStyle}"
+                         Height="80" TextWrapping="Wrap" AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="DeleteButton" Content="Delete" Width="80" Height="32"
+                    Margin="0,0,8,0" Click="DeleteButton_Click"
+                    Background="#DC2626" Foreground="White"/>
+            <Button x:Name="CancelButton" Content="Cancel" Width="80" Height="32"
+                    Margin="0,0,8,0" Click="CancelButton_Click"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
+                    Foreground="{DynamicResource ForegroundBrush}"/>
+            <Button x:Name="SaveButton" Content="Save" Width="80" Height="32"
+                    Click="SaveButton_Click" IsDefault="True"
+                    Background="{DynamicResource AccentBrush}" Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</Window>

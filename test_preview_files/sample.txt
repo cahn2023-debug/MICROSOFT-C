@@ -1,0 +1,4 @@
+This is a sample text file for preview testing.
+It contains multiple lines of text.
+Line 3: Testing preview functionality.
+Line 4: Hello World!

@@ -1,0 +1,25 @@
+<Application x:Class="OfflineProjectManager.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:OfflineProjectManager"
+             xmlns:conv="clr-namespace:OfflineProjectManager.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Initial Theme (Dark) -->
+                <ResourceDictionary Source="Resources/DarkTheme.xaml"/>
+                <ResourceDictionary Source="Resources/Icons.xaml"/>
+                <ResourceDictionary Source="Resources/AppIconResource.xaml"/>
+                <!-- Load Light Theme (Available for switching, but not merged initially in a way that overrides, we just need to load it to cache or we can load on demand) -->
+                <!-- Actually, standard way is to clear and add. But let's verify both files exist and are valid. -->
+                <!-- Simplified: Just load DarkTheme initially. We will load others in code. -->
+            </ResourceDictionary.MergedDictionaries>
+            <conv:FileTypeToVisibilityConverter x:Key="FileTypeToVisibilityConverter"/>
+            <conv:FileToIconConverter x:Key="FileToIconConverter"/>
+            <conv:NodeTypeToVisibilityConverter x:Key="NodeTypeToVisibilityConverter"/>
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

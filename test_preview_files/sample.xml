@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <name>Preview Test</name>
+    <version>1.0.0</version>
+    <description>Sample XML file for preview testing</description>
+    <features>
+        <feature name="Syntax highlighting" enabled="true"/>
+        <feature name="Dark theme" enabled="true"/>
+        <feature name="Line numbers" enabled="true"/>
+    </features>
+    <settings>
+        <setting key="maxSize" value="5000000"/>
+        <setting key="timeout" value="10"/>
+    </settings>
+</project>

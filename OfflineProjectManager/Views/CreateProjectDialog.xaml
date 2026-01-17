@@ -1,0 +1,200 @@
+<Window x:Class="OfflineProjectManager.Views.CreateProjectDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Create New Project" 
+        Height="280" 
+        Width="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#252526"
+        Foreground="#CCCCCC">
+    
+    <Window.Resources>
+        <!-- VS Code-inspired Button Style -->
+        <Style x:Key="VSCodeButton" TargetType="Button">
+            <Setter Property="Background" Value="#0E639C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1177BB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#0D5A8F"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- VS Code-inspired TextBox Style -->
+        <Style x:Key="VSCodeTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#3C3C3C"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="White"/>
+        </Style>
+    </Window.Resources>
+
+    <Border BorderBrush="#454545" BorderThickness="1">
+        <Grid Margin="24,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="18"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="18"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="0" 
+                       Text="Create New Project" 
+                       FontSize="16" 
+                       FontWeight="SemiBold"
+                       Foreground="#FFFFFF"
+                       Margin="0,0,0,20"/>
+
+            <!-- Project Name Label -->
+            <TextBlock Grid.Row="1" 
+                       Text="Project name" 
+                       FontSize="12"
+                       Foreground="#CCCCCC"
+                       Margin="0,0,0,6"/>
+
+            <!-- Project Name Input -->
+            <TextBox Grid.Row="2"
+                     x:Name="ProjectNameTextBox" 
+                     Style="{StaticResource VSCodeTextBox}"/>
+
+            <!-- Folder Path Label -->
+            <TextBlock Grid.Row="3" 
+                       Text="Project location" 
+                       FontSize="12"
+                       Foreground="#CCCCCC"
+                       Margin="0,0,0,6"/>
+
+            <!-- Folder Path Input with Browse -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox Grid.Column="0"
+                         x:Name="FolderPathTextBox" 
+                         Style="{StaticResource VSCodeTextBox}"
+                         IsReadOnly="True"/>
+                
+                <Button Grid.Column="2" 
+                        Content="Browse..." 
+                        Click="BrowseButton_Click"
+                        Background="#3C3C3C"
+                        Foreground="#CCCCCC"
+                        BorderBrush="#555555"
+                        BorderThickness="1"
+                        Padding="16,6"
+                        FontSize="13"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#505050"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- Info Text -->
+            <TextBlock Grid.Row="6" 
+                       TextWrapping="Wrap"
+                       Foreground="#888888"
+                       FontSize="11">
+                A .pmp project file will be created in the selected folder.
+            </TextBlock>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="8" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right"
+                        Margin="0,24,0,0">
+                <Button Content="Create" 
+                        Width="90" 
+                        Height="32"
+                        Click="OkButton_Click"
+                        IsDefault="True"
+                        Style="{StaticResource VSCodeButton}"/>
+                <Button Content="Cancel" 
+                        Width="90" 
+                        Height="32"
+                        Margin="8,0,0,0"
+                        Click="CancelButton_Click"
+                        IsCancel="True"
+                        Background="#3C3C3C"
+                        Foreground="#CCCCCC"
+                        BorderThickness="1"
+                        BorderBrush="#555555"
+                        Padding="12,6"
+                        FontSize="13"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#505050"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

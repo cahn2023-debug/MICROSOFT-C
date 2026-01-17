@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+    <!-- Dark Theme Styles -->
+    <style>
+        body {
+            background-color: #1E1E1E;
+            color: #D4D4D4;
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #252526;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            min-height: 90vh;
+        }
+
+        /* Highlight Class */
+        .highlight-match {
+            background-color: #FFEB3B;
+            color: #000000;
+            font-weight: bold;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        /* Table Styles (Excel) */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1em;
+        }
+
+        th,
+        td {
+            border: 1px solid #3E3E42;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333333;
+        }
+
+        .error {
+            color: #f48771;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #007ACC;
+        }
+    </style>
+    <!-- External Libs loaded from local assets -->
+    <script src="libs/mammoth.browser.min.js"></script>
+    <script src="libs/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <div class="loading">Loading preview...</div>
+    </div>
+
+    // Expose function for C# Injection
+    window.loadFromBase64 = async function(base64Data, extension, searchKeyword) {
+    try {
+    // Decode Base64 to Uint8Array
+    const binaryString = window.atob(base64Data);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) { bytes[i]=binaryString.charCodeAt(i); } const ext=extension.toLowerCase(); if
+        (ext==='.docx' || ext==='.doc' ) { await renderWord(bytes.buffer); } else if (ext==='.xlsx' || ext==='.xls' ||
+        ext==='.csv' ) { await renderExcel(bytes.buffer); } else {
+        app.innerHTML='<div class="error">Unsupported file type: ' + ext + '</div>' ; } // After render, highlight if
+        (searchKeyword) { highlightText(searchKeyword); } } catch (err) { console.error(err); app.innerHTML=`<div
+        class="error">Error rendering content: ${err.message}</div>`;
+        }
+        };
+
+        // If URL params are present (fallback/test), load them
+        const params = new URLSearchParams(window.location.search);
+        const fileUrl = params.get('file');
+        if (fileUrl) {
+        // ... existing load logic if needed, or just warn
+        app.innerHTML = '<div class="loading">Waiting for content injection...</div>';
+        } else {
+        app.innerHTML = '<div class="loading">Ready.</div>';
+        }
+
+        // Remove 'load()' auto-call as we wait for C# injection
+        // load();
+</body>
+
+</html>
