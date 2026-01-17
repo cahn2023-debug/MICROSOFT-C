@@ -176,7 +176,15 @@ namespace OfflineProjectManager.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[MainViewModel] PreviewFile error: {ex}");
-                CurrentPreview = null;
+                // Show error visually instead of null
+                CurrentPreview = new System.Windows.Controls.TextBlock
+                {
+                    Text = $"Error: {ex.Message}",
+                    Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red),
+                    FontSize = 14,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
             }
         }
 
