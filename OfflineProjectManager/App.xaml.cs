@@ -124,6 +124,10 @@ namespace OfflineProjectManager
             services.AddSingleton<IPreviewService, OfflineProjectManager.Features.Preview.Services.PreviewService>();
             services.AddSingleton<ITaskService, OfflineProjectManager.Features.Task.Services.TaskService>();
 
+            // Vietnamese text normalization and highlight services
+            services.AddSingleton<IVietnameseTextNormalizer, VietnameseTextNormalizerService>();
+            services.AddTransient<IHighlightService, HighlightService>();
+
             // Phase 3: Metadata extraction and thumbnail services
             services.AddSingleton<IMetadataExtractorService, MetadataExtractorService>();
             services.AddSingleton<IThumbnailCacheService, ThumbnailCacheService>();
