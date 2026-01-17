@@ -31,7 +31,7 @@ namespace OfflineProjectManager.Features.Preview.Services
         /// </summary>
         public async Task<UIElement> CreatePreviewAsync(string filePath, string searchKeyword = null)
         {
-            System.Diagnostics.Debug.WriteLine($"[PreviewService] CreatePreviewAsync called for: {filePath}, keyword: {searchKeyword ?? "(none)"}");
+            System.Diagnostics.Debug.WriteLine($"[PreviewService] CreatePreviewAsync START: {filePath}");
 
             // Validate input early
             if (string.IsNullOrEmpty(filePath))
@@ -46,70 +46,72 @@ namespace OfflineProjectManager.Features.Preview.Services
                 return CreateErrorElement($"File not found: {Path.GetFileName(filePath)}");
             }
 
-            // Check if file type is supported
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             System.Diagnostics.Debug.WriteLine($"[PreviewService] File extension: {ext}");
 
-            if (!IsSupportedFileType(ext))
+            // CRITICAL: Ensure we're on UI thread for ALL UI element creation
+            var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+            if (!dispatcher.CheckAccess())
             {
-                System.Diagnostics.Debug.WriteLine($"[PreviewService] Unsupported file type: {ext}");
-                return CreateUnsupportedElement(ext);
+                System.Diagnostics.Debug.WriteLine("[PreviewService] Switching to UI thread...");
+                return await dispatcher.InvokeAsync(async () =>
+                    await CreatePreviewOnUIThreadAsync(filePath, ext, searchKeyword)
+                ).Task.Unwrap();
             }
 
-            System.Diagnostics.Debug.WriteLine($"[PreviewService] File type supported: {ext}");
+            return await CreatePreviewOnUIThreadAsync(filePath, ext, searchKeyword);
+        }
+
+        /// <summary>
+        /// Internal method that creates preview - MUST be called on UI thread.
+        /// </summary>
+        private async Task<UIElement> CreatePreviewOnUIThreadAsync(string filePath, string ext, string searchKeyword)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PreviewService] CreatePreviewOnUIThreadAsync: {ext}");
 
             try
             {
-                // Special handling for text/code files - use native AvalonEdit control for better highlighting
+                // 1. TEXT/CODE FILES - Use AvalonEdit (must be on UI thread)
                 if (IsTextOrCodeFile(ext))
                 {
-                    System.Diagnostics.Debug.WriteLine("[PreviewService] Creating native text preview with AvalonEdit...");
+                    System.Diagnostics.Debug.WriteLine("[PreviewService] Creating AvalonEdit text preview...");
                     return CreateTextPreviewControl(filePath, searchKeyword);
                 }
 
-                // Special handling for PDF - use pdfjs
+                // 2. PDF FILES - Use PDF.js in WebView2
                 if (ext == ".pdf")
                 {
                     System.Diagnostics.Debug.WriteLine("[PreviewService] Creating PDF preview...");
                     return await CreatePdfPreviewAsync(filePath, searchKeyword);
                 }
 
-                // Get HTML from converter (inside try-catch)
+                // 3. ALL OTHER FILES - Convert to HTML and render in WebView2
+                System.Diagnostics.Debug.WriteLine("[PreviewService] Getting HTML content...");
                 string html;
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("[PreviewService] Getting preview HTML...");
                     html = GetPreviewHtml(filePath);
-                    System.Diagnostics.Debug.WriteLine($"[PreviewService] HTML generated, length: {html?.Length ?? 0}");
+                    System.Diagnostics.Debug.WriteLine($"[PreviewService] HTML generated: {html?.Length ?? 0} chars");
                 }
                 catch (Exception convEx)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PreviewService] Converter error: {convEx}");
-                    return CreateErrorElement($"Error converting file: {convEx.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[PreviewService] Converter error: {convEx.Message}");
+                    return CreateErrorElement($"Converter error: {convEx.Message}");
                 }
 
-                // Ensure we're on UI thread for WebView2 creation
-                var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
-                System.Diagnostics.Debug.WriteLine($"[PreviewService] On UI thread: {dispatcher.CheckAccess()}");
-
-                if (!dispatcher.CheckAccess())
+                if (string.IsNullOrEmpty(html))
                 {
-                    // Invoke on UI thread
-                    System.Diagnostics.Debug.WriteLine("[PreviewService] Invoking on UI thread...");
-                    return await dispatcher.InvokeAsync(async () =>
-                    {
-                        return await CreateWebViewPreviewAsync(html, searchKeyword);
-                    }).Task.Unwrap();
+                    System.Diagnostics.Debug.WriteLine("[PreviewService] Empty HTML, showing fallback");
+                    return CreateErrorElement("Could not generate preview content");
                 }
 
-                System.Diagnostics.Debug.WriteLine("[PreviewService] Creating WebView preview...");
-                var result = await CreateWebViewPreviewAsync(html, searchKeyword);
-                System.Diagnostics.Debug.WriteLine($"[PreviewService] Preview created: {result?.GetType().Name ?? "null"}");
-                return result;
+                // Create and initialize WebView2
+                System.Diagnostics.Debug.WriteLine("[PreviewService] Creating WebView2...");
+                return await CreateWebViewPreviewAsync(html, searchKeyword);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PreviewService] Error: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[PreviewService] CRITICAL ERROR: {ex}");
                 return CreateErrorElement($"Preview error: {ex.Message}");
             }
         }
