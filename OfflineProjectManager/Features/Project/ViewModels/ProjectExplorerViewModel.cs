@@ -453,8 +453,14 @@ namespace OfflineProjectManager.Features.Project.ViewModels
                 {
                     _searchMatchCache.TryGetValue(node.Path, out var matches);
                     System.Diagnostics.Debug.WriteLine($"[ProjectExplorerVM] Calling PreviewFile for: {node.Path}");
+
+                    // FIX: Use CurrentSearchQuery with fallback to SearchQuery for highlighting
+                    string queryToHighlight = !string.IsNullOrWhiteSpace(CurrentSearchQuery)
+                        ? CurrentSearchQuery
+                        : SearchQuery;
+
                     // Fire and forget async call
-                    _ = _mainViewModel.PreviewFile(node.Path, CurrentSearchQuery);
+                    _ = _mainViewModel.PreviewFile(node.Path, queryToHighlight);
                 }
                 else if (node.Type == "Folder")
                 {

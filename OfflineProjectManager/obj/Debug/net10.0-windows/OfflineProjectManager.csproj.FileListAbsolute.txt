@@ -650,3 +650,4 @@ D:\Code Antinigaty\Phan mem quan ly file V4_Python_co thu vien\MICROSOFT C\Offli
 D:\Code Antinigaty\Phan mem quan ly file V4_Python_co thu vien\MICROSOFT C\OfflineProjectManager\obj\Debug\net10.0-windows\OfflineProjectManager.pdb
 D:\Code Antinigaty\Phan mem quan ly file V4_Python_co thu vien\MICROSOFT C\OfflineProjectManager\obj\Debug\net10.0-windows\OfflineProjectManager.genruntimeconfig.cache
 D:\Code Antinigaty\Phan mem quan ly file V4_Python_co thu vien\MICROSOFT C\OfflineProjectManager\obj\Debug\net10.0-windows\ref\OfflineProjectManager.dll
+D:\Code Antinigaty\Phan mem quan ly file V4_Python_co thu vien\MICROSOFT C\OfflineProjectManager\obj\Debug\net10.0-windows\OfflineProjectManager.sourcelink.json

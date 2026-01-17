@@ -96,19 +96,30 @@ namespace OfflineProjectManager.Services
             try
             {
                 // Phase 3: Improved FTS5 query syntax
-                // Escape special FTS5 characters and wrap in quotes for phrase search
-                var queryFts = queryNorm.Replace("\"", "\"\"").Replace("'", "''");
+                // Escape special FTS5 characters for safe query
+                var queryFts = queryNorm
+                    .Replace("\"", "\"\"")
+                    .Replace("'", "''")
+                    .Replace("*", "")
+                    .Replace("?", "")
+                    .Trim();
 
-                // CRITICAL FIX: Use proper parameterization for SqlQueryRaw
-                var matchQuery = $"\"{queryFts}\"";  // Wrap in quotes for FTS5 phrase match
+                if (string.IsNullOrEmpty(queryFts))
+                {
+                    System.Diagnostics.Debug.WriteLine("[FTS5] Query is empty after escaping, skipping FTS search");
+                    return;
+                }
+
+                // FIX: Use prefix search with trailing * for better accent/partial matching
+                var matchQuery = $"\"{queryFts}\"*";
 
                 System.Diagnostics.Debug.WriteLine($"[FTS5] Searching for: {matchQuery}");
 
-                // Execute FTS5 search with proper parameterization
-                // Updated to use files_fts (External Content)
+                // Execute FTS5 search with proper table reference
+                // FIX: Use files_fts in the MATCH clause, not ffts alias
                 var ftsPaths = await ctx.Database
                     .SqlQueryRaw<string>(
-                        "SELECT f.path FROM files_fts ffts JOIN files f ON f.id = ffts.rowid WHERE ffts MATCH {0} LIMIT {1}",
+                        "SELECT f.path FROM files_fts JOIN files f ON f.id = files_fts.rowid WHERE files_fts MATCH {0} LIMIT {1}",
                         matchQuery,
                         maxResults)
                     .ToListAsync(cancellationToken)
@@ -291,16 +302,23 @@ namespace OfflineProjectManager.Services
 
                     if (lineNorm.Contains(queryNorm))
                     {
+                        // FIX: Build index map to correctly map normalized offsets to original text
+                        var (lineNoAccentForMap, map) = VietnameseTextHelper.BuildNoAccentAndMap(line.Normalize(System.Text.NormalizationForm.FormC));
                         int idx = lineNorm.IndexOf(queryNorm, StringComparison.Ordinal);
                         while (idx != -1)
                         {
+                            // Map normalized index back to original text index
+                            int start = (idx < map.Count) ? map[idx] : idx;
+                            int endIdxRaw = idx + queryNorm.Length - 1;
+                            int end = (endIdxRaw < map.Count) ? map[endIdxRaw] + 1 : start + queryNorm.Length;
+
                             matches.Add(new SearchMatch
                             {
                                 Line = lineNum,
                                 Text = line.Trim(),
                                 MatchType = "text",
-                                Start = idx,
-                                End = idx + queryNorm.Length
+                                Start = start,
+                                End = end
                             });
                             idx = lineNorm.IndexOf(queryNorm, idx + 1, StringComparison.Ordinal);
                         }

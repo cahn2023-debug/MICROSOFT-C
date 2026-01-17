@@ -1,0 +1,37 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\Code Antinigaty\\Phan mem quan ly file V4_Python_co thu vien\\MICROSOFT C\\OfflineProjectManager\\obj\\Release\\net10.0-windows\\scopedcss\\bundle\\OfflineProjectManager.styles.css",
+      "PackagePath": "staticwebassets\\OfflineProjectManager.styles.css"
+    },
+    {
+      "Id": "D:\\Code Antinigaty\\Phan mem quan ly file V4_Python_co thu vien\\MICROSOFT C\\OfflineProjectManager\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "D:\\Code Antinigaty\\Phan mem quan ly file V4_Python_co thu vien\\MICROSOFT C\\OfflineProjectManager\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Release\\net10.0-windows\\staticwebassets\\msbuild.OfflineProjectManager.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Release\\net10.0-windows\\staticwebassets\\msbuild.OfflineProjectManager.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net10.0-windows\\staticwebassets\\msbuild.build.OfflineProjectManager.props",
+      "PackagePath": "build\\OfflineProjectManager.props"
+    },
+    {
+      "Id": "obj\\Release\\net10.0-windows\\staticwebassets\\msbuild.buildMultiTargeting.OfflineProjectManager.props",
+      "PackagePath": "buildMultiTargeting\\OfflineProjectManager.props"
+    },
+    {
+      "Id": "obj\\Release\\net10.0-windows\\staticwebassets\\msbuild.buildTransitive.OfflineProjectManager.props",
+      "PackagePath": "buildTransitive\\OfflineProjectManager.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

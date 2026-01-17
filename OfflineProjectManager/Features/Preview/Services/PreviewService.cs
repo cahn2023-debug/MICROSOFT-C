@@ -154,6 +154,8 @@ namespace OfflineProjectManager.Features.Preview.Services
                         // Inject highlight script after navigation completes
                         try
                         {
+                            // FIX: Wait for DOM to be fully ready before injecting script
+                            await System.Threading.Tasks.Task.Delay(150);
                             await InjectHighlightScriptAsync(webView, keywordForClosure);
                         }
                         catch (Exception scriptEx)
@@ -306,16 +308,25 @@ namespace OfflineProjectManager.Features.Preview.Services
                     frag.appendChild(document.createTextNode(text.substring(lastEnd, idx)));
                 }}
                 
+                // FIX: Find actual match length in original text
+                // The normalized match position corresponds to original text position
+                // But the match length in original may differ due to combining diacritics
+                let matchLen = keywordNorm.length;
+                // Ensure we don't go beyond text boundary
+                if (idx + matchLen > text.length) {{
+                    matchLen = text.length - idx;
+                }}
+                
                 // Create highlight mark
                 const mark = document.createElement('mark');
                 mark.className = matchCount === 0 ? 'search-highlight search-highlight-first' : 'search-highlight';
-                mark.textContent = text.substring(idx, idx + keyword.length);
+                mark.textContent = text.substring(idx, idx + matchLen);
                 frag.appendChild(mark);
                 
                 if (!firstMatch) firstMatch = mark;
                 matchCount++;
                 
-                lastEnd = idx + keyword.length;
+                lastEnd = idx + matchLen;
                 idx = textNorm.indexOf(keywordNorm, lastEnd);
             }}
             

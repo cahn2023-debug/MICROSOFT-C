@@ -232,31 +232,31 @@ namespace OfflineProjectManager.Features.Preview.Controls
             var normalized = new StringBuilder();
             var indexMap = new List<int>();
 
-            string formD = originalText.Normalize(NormalizationForm.FormD);
-            int originalIndex = 0; // Track position in FormC normalized text
-            var formCBuilder = new StringBuilder();
-
-            // First pass: handle FormD decomposition and rebuild mapping
-            foreach (char c in formD)
+            // FIX: Iterate over original text characters to correctly track indices
+            for (int originalIdx = 0; originalIdx < originalText.Length; originalIdx++)
             {
-                var category = CharUnicodeInfo.GetUnicodeCategory(c);
-                if (category == UnicodeCategory.NonSpacingMark)
+                char c = originalText[originalIdx];
+
+                // Decompose single character to handle combining marks
+                string decomposed = c.ToString().Normalize(NormalizationForm.FormD);
+
+                // Extract only the base character (skip combining marks)
+                bool addedBase = false;
+                foreach (char dc in decomposed)
                 {
-                    // Skip combining marks (accents) - they don't contribute to normalized text
-                    continue;
+                    var category = CharUnicodeInfo.GetUnicodeCategory(dc);
+                    if (category != UnicodeCategory.NonSpacingMark && !addedBase)
+                    {
+                        char lower = char.ToLowerInvariant(dc);
+
+                        // Handle đ/Đ special case
+                        if (lower == 'đ') lower = 'd';
+
+                        normalized.Append(lower);
+                        indexMap.Add(originalIdx);  // Map to original string index
+                        addedBase = true;
+                    }
                 }
-
-                char lower = char.ToLowerInvariant(c);
-
-                // Handle đ/Đ
-                if (lower == 'đ')
-                {
-                    lower = 'd';
-                }
-
-                normalized.Append(lower);
-                indexMap.Add(originalIndex);
-                originalIndex++;
             }
 
             // Add sentinel for end-of-string mapping
